@@ -12,14 +12,14 @@ import os
 from selenium.webdriver.chrome.options import Options
 
 
-companies_done = 0
+num = 1321
 
 firm_info_list = []
 
 
 def store_csv(filename):
     global firm_info_list
-
+    global num
     if (os.path.exists(filename)):
         df = pd.read_csv(filename)
     else:
@@ -35,14 +35,20 @@ def store_csv(filename):
                      "Organization 1 - Yomi Name", "Organization 1 - Title", "Organization 1 - Department",
                      "Organization 1 - Symbol", "Organization 1 - Location", "Organization 1 - Job Description"])
 
+
     for firm_info in firm_info_list:
+        if (df['Phone 1 - Value'] == firm_info['phone']).any():
+            print(f"Duplicate: {firm_info['name']} ")
+            continue
+
         row = {
-            "Name": firm_info['name'],
-            "Given Name": firm_info['name'],
+            "Name": "GS " + str(num) + " " + firm_info['name'],
+            "Given Name": "GS " + str(num) + " " + firm_info['name'],
             "Phone 1 - Type": "Mobile",
             "Phone 1 - Value": firm_info['phone'],
             "Organization 1 - Name": firm_info['category']
         }
+        num += 1
         df = df._append(row, ignore_index=True)
 
     df.to_csv(filename, index=False)
@@ -131,9 +137,9 @@ def main():
     chrome_options.add_argument('--headless')
     chrome_options.add_argument('--disable-gpu')
     driver = webdriver.Chrome(options=chrome_options)
-    page_num = 1
-    query = 'construction companies near me'
-    emirate = 'dubai'
+    page_num = 111
+    query = 'barber shop'
+    emirate = 'ajman'
     while True:
         url = f"https://2gis.ae/{emirate}/search/{query}/page/{page_num}"
         driver.get(url)
@@ -155,5 +161,5 @@ def main():
 if __name__ == "__main__":
     try:
         main()
-    except Exception:
-        pass
+    except Exception as e:
+        print(e)
