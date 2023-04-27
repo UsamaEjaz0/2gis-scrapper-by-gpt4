@@ -1,9 +1,7 @@
 from telnetlib import EC
 import pandas as pd
 from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
 import time
-import csv
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -11,16 +9,15 @@ from selenium.common.exceptions import TimeoutException, NoSuchElementException
 import os
 from selenium.webdriver.chrome.options import Options
 
-
-num = 1321
-
+num = 1
+skipped = 0
 firm_info_list = []
 
 
 def store_csv(filename):
     global firm_info_list
     global num
-    if (os.path.exists(filename)):
+    if os.path.exists(filename):
         df = pd.read_csv(filename)
     else:
 
@@ -35,7 +32,6 @@ def store_csv(filename):
                      "Organization 1 - Yomi Name", "Organization 1 - Title", "Organization 1 - Department",
                      "Organization 1 - Symbol", "Organization 1 - Location", "Organization 1 - Job Description"])
 
-
     for firm_info in firm_info_list:
         if (df['Phone 1 - Value'] == firm_info['phone']).any():
             print(f"Duplicate: {firm_info['name']} ")
@@ -48,14 +44,16 @@ def store_csv(filename):
             "Phone 1 - Value": firm_info['phone'],
             "Organization 1 - Name": firm_info['category']
         }
-        num += 1
+
         df = df._append(row, ignore_index=True)
+        print(f"Added GS {num} {firm_info['name']}")
+        num += 1
 
     df.to_csv(filename, index=False)
 
 
 def extract_business_info(driver, data):
-    global firm_info_list
+    global firm_info_list, skipped
     for single_card in data:
         driver.get(single_card['link'])
         time.sleep(3)
@@ -64,7 +62,6 @@ def extract_business_info(driver, data):
                 "name": single_card['name'],
                 "category": single_card['category'],
                 "address": single_card['address'],
-                # "link": single_card['link']
             }
 
             # Phone number
@@ -73,7 +70,9 @@ def extract_business_info(driver, data):
                 phone_number = phone_element.get_attribute('href').split(':')[1].strip()
                 firm_info['phone'] = phone_number
             except Exception as e:
-                firm_info['phone'] = "Not Available"
+                print(f"Skipped {skipped} ")
+                skipped += 1
+                continue
 
             firm_info_list.append(firm_info)
         except NoSuchElementException as e:
@@ -92,7 +91,6 @@ def parse_results(driver):
     time.sleep(3)
     results = driver.find_elements("xpath", '//div[contains(@class, "_awwm2v")]/div/div[contains(@class, "_1kf6gff")]')
     data = []
-    print(len(results))
 
     for result in results:
         try:
@@ -135,22 +133,24 @@ def main():
 
     chrome_options = Options()
     chrome_options.add_argument('--headless')
-    chrome_options.add_argument('--disable-gpu')
     driver = webdriver.Chrome(options=chrome_options)
-    page_num = 111
-    query = 'barber shop'
-    emirate = 'ajman'
+    page_num = 1
+    query = 'barber shop in ajman'
+    # emirate = 'ajman'
     while True:
-        url = f"https://2gis.ae/{emirate}/search/{query}/page/{page_num}"
+
+        url = f"https://2gis.ae/search/{query}/page/{page_num}"
         driver.get(url)
-        time.sleep(5)  # Let the page load
+        time.sleep(4)  # Let the page load
+        print(f"Opened page {page_num}")
         data = parse_results(driver)
         if not data:
             print(f"No more results on page {page_num}. Exiting...")
             break
+
         extract_business_info(driver, data)
 
-        store_csv(f'{query} - {emirate} - companies.csv')
+        store_csv(f'{query}.csv')
         firm_info_list = []
 
         page_num += 1
