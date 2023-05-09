@@ -20,7 +20,6 @@ def store_csv(filename):
     if os.path.exists(filename):
         df = pd.read_csv(filename)
     else:
-
         df = pd.DataFrame(
             columns=["Name", "Given Name", "Additional Name", "Family Name", "Yomi Name", "Given Name Yomi",
                      "Additional Name Yomi", "Family Name Yomi", "Name Prefix", "Name Suffix", "Initials",
@@ -33,21 +32,23 @@ def store_csv(filename):
                      "Organization 1 - Symbol", "Organization 1 - Location", "Organization 1 - Job Description"])
 
     for firm_info in firm_info_list:
-        if (df['Phone 1 - Value'] == firm_info['phone']).any():
+
+        if df['Phone 1 - Value'].isin([int(firm_info['phone'])]).any():
+            print(firm_info['phone'])
             print(f"Duplicate: {firm_info['name']} ")
-            continue
 
-        row = {
-            "Name": "GS " + str(num) + " " + firm_info['name'],
-            "Given Name": "GS " + str(num) + " " + firm_info['name'],
-            "Phone 1 - Type": "Mobile",
-            "Phone 1 - Value": firm_info['phone'],
-            "Organization 1 - Name": firm_info['category']
-        }
+        else:
+            row = {
+                "Name": "GS " + str(num) + " " + firm_info['name'],
+                "Given Name": "GS " + str(num) + " " + firm_info['name'],
+                "Phone 1 - Type": "Mobile",
+                "Phone 1 - Value": firm_info['phone'],
+                "Organization 1 - Name": firm_info['category']
+            }
 
-        df = df._append(row, ignore_index=True)
-        print(f"Added GS {num} {firm_info['name']}")
-        num += 1
+            df = df._append(row, ignore_index=True)
+            print(f"Added GS {num} {firm_info['name']}")
+            num += 1
 
     df.to_csv(filename, index=False)
 
@@ -128,15 +129,24 @@ def parse_results(driver):
     return data
 
 
+def save_checkpoint(page):
+    open("checkpoint.txt", "w").write(page)
+
+
+def get_checkpoint():
+    if os.path.exists("checkpoint.txt"):
+        return open("checkpoint.txt", "r").read()
+    else:
+        return 1
+
 def main():
     global firm_info_list
 
     chrome_options = Options()
     chrome_options.add_argument('--headless')
     driver = webdriver.Chrome(options=chrome_options)
-    page_num = 1
+    page_num = get_checkpoint()
     query = 'barber shop in ajman'
-    # emirate = 'ajman'
     while True:
 
         url = f"https://2gis.ae/search/{query}/page/{page_num}"
@@ -150,7 +160,8 @@ def main():
 
         extract_business_info(driver, data)
 
-        store_csv(f'{query}.csv')
+        store_csv(f'{query} - no dup.csv')
+
         firm_info_list = []
 
         page_num += 1
