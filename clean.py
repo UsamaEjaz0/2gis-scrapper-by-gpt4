@@ -1,8 +1,8 @@
 import pandas as pd
-filename = "resources/transitional_df.csv"
+filename = "resources/numbers.csv"
 df = pd.read_csv(filename)
-
-# df = df.drop_duplicates(subset='Phone 1 - Value', keep="last")
+# df = df.drop_duplicates( keep="last")
+# df.to_csv(filename)
 # print(df.shape)
 # print(df['Phone 1 - Value'])
 #
@@ -15,7 +15,7 @@ df = pd.read_csv(filename)
 #     print(False)
 #
 
-duplicates = df[df.duplicated(keep=False)]
+duplicates = df[df.duplicated(subset='Phone 1 - Value', keep=False)]
 print(duplicates)
 # # print the duplicate rows
 # print(duplicates)

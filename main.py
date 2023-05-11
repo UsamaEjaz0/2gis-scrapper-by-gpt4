@@ -53,7 +53,8 @@ def store_csv(filename):
                 "Given Name": "GS " + str(num) + " " + firm_info['name'],
                 "Phone 1 - Type": "Mobile",
                 "Phone 1 - Value": firm_info['phone'],
-                "Organization 1 - Name": firm_info['category']
+                "Organization 1 - Name": firm_info['category'],
+
             }
 
             df = df._append(row, ignore_index=True)
