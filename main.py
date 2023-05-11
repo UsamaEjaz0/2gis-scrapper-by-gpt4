@@ -2,6 +2,8 @@ from telnetlib import EC
 import pandas as pd
 from selenium import webdriver
 import time
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -12,6 +14,14 @@ from selenium.webdriver.chrome.options import Options
 num = 1
 skipped = 0
 firm_info_list = []
+
+
+def search_salons(query, driver):
+    search_box = driver.find_element("xpath", "//input[@class='_1gvu1zk' and @placeholder='Search in 2GIS']")
+    search_box.clear()
+    search_box.send_keys(query)
+    search_box.send_keys(Keys.RETURN)
+    time.sleep(3)  # Allow the search results to load
 
 
 def store_csv(filename):
@@ -129,48 +139,86 @@ def parse_results(driver):
     return data
 
 
-def save_checkpoint(page):
-    open("checkpoint.txt", "w").write(page)
+# def save_checkpoint(company_num, page):
+#     open("checkpoint.txt", "w").write(f"{company_num};{page}")
+#
+#
+# def get_checkpoint():
+#     global num
+#     try:
+#         if os.path.exists("checkpoint.txt"):
+#             _ = open("checkpoint.txt", "r").read()
+#             num = int(_.split(";")[0])
+#             return int(_.split(";")[1])
+#         else:
+#             return 3
+#     except Exception:
+#         return 1
 
-
-def get_checkpoint():
-    if os.path.exists("checkpoint.txt"):
-        return open("checkpoint.txt", "r").read()
-    else:
-        return 1
 
 def main():
+    global num
     global firm_info_list
 
     chrome_options = Options()
-    chrome_options.add_argument('--headless')
+    # chrome_options.add_argument('--headless')
     driver = webdriver.Chrome(options=chrome_options)
-    page_num = get_checkpoint()
+    driver.get("https://2gis.ae/")
+    time.sleep(3)
     query = 'barber shop in ajman'
+    search_salons(query, driver)
+    page_num = 0
     while True:
-
-        url = f"https://2gis.ae/search/{query}/page/{page_num}"
-        driver.get(url)
-        time.sleep(4)  # Let the page load
-        print(f"Opened page {page_num}")
         data = parse_results(driver)
-        if not data:
-            print(f"No more results on page {page_num}. Exiting...")
-            break
-
         extract_business_info(driver, data)
-
         store_csv(f'{query} - no dup.csv')
-
+        # save_checkpoint(num, page_num)
         firm_info_list = []
 
-        page_num += 1
+        wait = WebDriverWait(driver, 100)
+        buttons = wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, 'div._n5hmn94')))
 
-    driver.quit()
+        print(buttons)
+
+        element = buttons[0]
+        if len(buttons) >= 2:
+            element = buttons[1]
+        driver.execute_script("arguments[0].scrollIntoView();", element)
+        driver.execute_script("arguments[0].click();", element)
+        page_num += 1
+        print(driver.current_url)
+
+    # page_num = get_checkpoint()
+    # emirate = "ajman"
+    # emirate = "ras%20al-khaimah"
+    # emirate = "dubai"
+    # emirate = "sharjah"
+    # emirate = "fujairah"
+
+    # while True:
+    #
+    #     url = f"https://2gis.ae/{emirate}/search/{query}/page/{page_num}"
+    #     print(url)
+    #     driver.get(url)
+    #     time.sleep(4)  # Let the page load
+    #     print(f"Opened page {page_num}")
+    #     data = parse_results(driver)
+    #     if not data:
+    #         print(f"No more results on page {page_num}. Exiting...")
+    #         break
+    #
+    #     extract_business_info(driver, data)
+    #     store_csv(f'{query} - no dup.csv')
+    #     save_checkpoint(num, page_num)
+    #     firm_info_list = []
+    #     page_num += 1
+    #     time.sleep(3)
+
+    # driver.quit()
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except Exception as e:
-        print(e)
+    # try:
+    main()
+    # except Exception as e:
+    #     print(e)
