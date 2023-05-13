@@ -6,7 +6,6 @@ from selenium.webdriver.chrome.options import Options
 
 skipped = 0
 
-
 def get_output_df(output_file_path):
     if os.path.exists(output_file_path):
         df_out = pd.read_csv(output_file_path)
@@ -49,8 +48,8 @@ def to_csv_individual_firm_data(driver, output_file_path, input_file_path):
                         "Phone 1 - Type": "Mobile",
                         "Phone 1 - Value": f"{phone_number}",
                         "Organization 1 - Name": row["name"],
-                        "Location": row["address"],
-                        "Notes": row["link"]
+                        # "Location": row["address"],
+                        # "Notes": row["link"]
                     }
 
                     print(f"{entry['Name']} inserted")
@@ -92,7 +91,7 @@ def get_checkpoint():
 def main():
 
     chrome_options = Options()
-    # chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--headless')
     driver = webdriver.Chrome(options=chrome_options)
 
     phone_numbers_path = f"resources/numbers.csv"
@@ -101,62 +100,5 @@ def main():
     to_csv_individual_firm_data(driver, phone_numbers_path, transitional_df_path)
 
 
-    # driver.get("https://2gis.ae/")
-    # time.sleep(3)
-    # query = 'barber shop in ajman'
-
-    # page_num = 0
-    # while True:
-    #     data = parse_results(driver)
-    #     extract_business_info(driver, data)
-    #     store_csv(f'{query} - no dup.csv')
-    #     # save_checkpoint(num, page_num)
-    #     firm_info_list = []
-    #
-    #     wait = WebDriverWait(driver, 100)
-    #     buttons = wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, 'div._n5hmn94')))
-    #
-    #     print(buttons)
-    #
-    #     element = buttons[0]
-    #     if len(buttons) >= 2:
-    #         element = buttons[1]
-    #     driver.execute_script("arguments[0].scrollIntoView();", element)
-    #     driver.execute_script("arguments[0].click();", element)
-    #     page_num += 1
-    #     print(driver.current_url)
-
-    # page_num = get_checkpoint()
-    # emirate = "ajman"
-    # emirate = "ras%20al-khaimah"
-    # emirate = "dubai"
-    # emirate = "sharjah"
-    # emirate = "fujairah"
-
-    # while True:
-    #
-    #     url = f"https://2gis.ae/{emirate}/search/{query}/page/{page_num}"
-    #     print(url)
-    #     driver.get(url)
-    #     time.sleep(4)  # Let the page load
-    #     print(f"Opened page {page_num}")
-    #     data = parse_results(driver)
-    #     if not data:
-    #         print(f"No more results on page {page_num}. Exiting...")
-    #         break
-    #
-    #     extract_business_info(driver, data)
-    #     store_csv(f'{query} - no dup.csv')
-    #     save_checkpoint(num, page_num)
-    #     firm_info_list = []
-    #     page_num += 1
-    #     time.sleep(3)
-
-    # driver.quit()
-
-
 if __name__ == "__main__":
-    # try:
     main()
-    # except Exception as e:
-    #     print(e)
