@@ -47,7 +47,7 @@ def to_csv_individual_firm_data(driver, output_file_path, input_file_path):
                         "Given Name": "GS " + str(num) + " " + row['name'],
                         "Phone 1 - Type": "Mobile",
                         "Phone 1 - Value": f"{phone_number}",
-                        "Organization 1 - Name": row["name"],
+                        # "Organization 1 - Name": row["name"],
                         # "Location": row["address"],
                         # "Notes": row["link"]
                     }
@@ -70,14 +70,14 @@ def to_csv_individual_firm_data(driver, output_file_path, input_file_path):
 
 
 def save_checkpoint(company_num, index):
-    open("resources/checkpoint.txt", "w").write(f"{company_num};{index}")
+    open("../resources/checkpoint.txt", "w").write(f"{company_num};{index}")
 
 
 def get_checkpoint():
     global num
     try:
-        if os.path.exists("resources/checkpoint.txt"):
-            _ = open("resources/checkpoint.txt", "r").read()
+        if os.path.exists("../resources/checkpoint.txt"):
+            _ = open("../resources/checkpoint.txt", "r").read()
             num = int(_.split(";")[0])
             index = int(_.split(";")[1])
 
@@ -94,8 +94,8 @@ def main():
     chrome_options.add_argument('--headless')
     driver = webdriver.Chrome(options=chrome_options)
 
-    phone_numbers_path = f"resources/numbers.csv"
-    transitional_df_path = "resources/transitional_df.csv"
+    phone_numbers_path = f"../resources/numbers.csv"
+    transitional_df_path = "../resources/transitional_df.csv"
 
     to_csv_individual_firm_data(driver, phone_numbers_path, transitional_df_path)
 

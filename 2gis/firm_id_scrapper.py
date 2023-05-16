@@ -72,8 +72,8 @@ def main():
 
     URL = "https://2gis.ae/"
     query = 'barber shop in ajman'
-    transitional_df_path = "resources/transitional_df.csv"
-    firm_id_scrapper_path = "out/firm_id_scrapper_log.txt"
+    transitional_df_path = "../resources/transitional_df.csv"
+    firm_id_scrapper_path = "../out/firm_id_scrapper_log.txt"
 
     chrome_options = Options()
     # chrome_options.add_argument('--headless')
